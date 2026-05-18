@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bolt Earth — Register</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --neon: #00f5d4;
+      --neon2: #7b2fff;
+      --bg: #050a0e;
+      --surface: #0d1b2a;
+      --border: rgba(0,245,212,0.18);
+      --text: #e8f4f8;
+      --muted: #5a7a8a;
+      --danger: #ff4b6e;
+      --success: #26de81;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Exo 2', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 16px;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,212,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridDrift 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridDrift {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      pointer-events: none;
+      animation: orbFloat 8s ease-in-out infinite alternate;
+    }
+
+    .orb1 { width: 350px; height: 350px; background: var(--neon);  top: -80px;    left: -80px;   }
+    .orb2 { width: 300px; height: 300px; background: var(--neon2); bottom: -50px; right: -50px; }
+
+    @keyframes orbFloat {
+      from { transform: translate(0,0); }
+      to   { transform: translate(20px,30px); }
+    }
+
+    .auth-card {
+      position: relative;
+      width: min(520px, 96vw);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 0 60px rgba(0,245,212,0.05), 0 30px 80px rgba(0,0,0,0.6);
+      z-index: 1;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .brand-bolt { font-size: 26px; }
+
+    .brand-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--text);
+      letter-spacing: 2px;
+    }
+
+    .steps-wrap {
+      display: flex;
+      margin-bottom: 28px;
+    }
+
+    .step-item {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+    }
+
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
+      color: var(--muted);
+      background: var(--bg);
+      z-index: 1;
+      position: relative;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .step-item.active .step-circle { border-color: var(--neon);  color: var(--neon);  }
+    .step-item.done   .step-circle { background:   var(--neon);  color: black; border-color: var(--neon); }
+
+    .step-label { margin-top: 6px; font-size: 10px; color: var(--muted); }
+    .step-item.active .step-label { color: var(--neon); }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .section-sub { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+
+    .step-pane         { display: none; }
+    .step-pane.active  { display: block; }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--neon);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .badge.req {
+      background: rgba(255,75,110,0.15);
+      color: var(--danger);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 9px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(0,245,212,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+      font-family: 'Exo 2', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input::placeholder { color: var(--muted); }
+
+    .form-input:focus {
+      border-color: var(--neon);
+      box-shadow: 0 0 0 3px rgba(0,245,212,0.1);
+    }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 12px; }
+
+    .btn-back {
+      padding: 14px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-back:hover { border-color: var(--neon); color: var(--neon); }
+
+    .btn-next,
+    .submit-btn {
+      flex: 1;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--neon2), #9b4fff);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      letter-spacing: 1px;
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+    }
+
+    .btn-next:hover,
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(123,47,255,0.35); }
+
+    .submit-btn:disabled { opacity: 0.6; pointer-events: none; }
+
+    .error-msg {
+      background: rgba(255,75,110,0.1);
+      border: 1px solid rgba(255,75,110,0.3);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--danger);
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .error-msg.show   { display: block; animation: shake 0.3s ease; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+
+    .success-msg {
+      background: rgba(0,245,212,0.1);
+      border: 1px solid rgba(0,245,212,0.3);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--neon);
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .success-msg.show { display: block; }
+
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .auth-switch a { color: var(--neon); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="auth-card">
+
+  <div class="brand">
+    <span class="brand-bolt">⚡</span>
+    <span class="brand-name">BOLT EARTH</span>
+  </div>
+
+  <!-- STEP INDICATORS -->
+  <div class="steps-wrap">
+    <div class="step-item active" id="si-1">
+      <div class="step-circle">1</div>
+      <div class="step-label">Account</div>
+    </div>
+    <div class="step-item" id="si-2">
+      <div class="step-circle">2</div>
+      <div class="step-label">Vehicle</div>
+    </div>
+    <div class="step-item" id="si-3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Contact</div>
+    </div>
+  </div>
+
+  <div class="error-msg"   id="errorMsg"></div>
+  <div class="success-msg" id="successMsg"></div>
+
+  <!-- ── STEP 1 : Account ────────────────────────────────────────────── -->
+  <div class="step-pane active" id="pane-1">
+
+    <div class="section-title">Create Account</div>
+    <div class="section-sub">Join smart EV charging</div>
+
+    <div class="form-group">
+      <label class="form-label">Full Name <span class="badge req">Required</span></label>
+      <input class="form-input" type="text" id="full_name" placeholder="Enter full name" autocomplete="name">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Email <span class="badge req">Required</span></label>
+      <input class="form-input" type="email" id="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Password <span class="badge req">Required</span></label>
+      <input class="form-input" type="password" id="password" placeholder="Minimum 6 characters" autocomplete="new-password">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Confirm Password <span class="badge req">Required</span></label>
+      <input class="form-input" type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-next" onclick="goStep(2)">NEXT — VEHICLE ›</button>
+    </div>
+
+  </div>
+
+  <!-- ── STEP 2 : Vehicle ────────────────────────────────────────────── -->
+  <div class="step-pane" id="pane-2">
+
+    <div class="section-title">Vehicle Details</div>
+    <div class="section-sub">Enter vehicle information</div>
+
+    <div class="form-group">
+      <label class="form-label">Vehicle Model <span class="badge req">Required</span></label>
+      <input class="form-input" type="text" id="vehicle_model" placeholder="Ex: Nexon EV">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Number Plate <span class="badge req">Required</span></label>
+      <input
+        class="form-input"
+        type="text"
+        id="number_plate"
+        placeholder="TN09AB1234"
+        maxlength="10"
+        oninput="this.value=this.value.toUpperCase()"
+      >
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(1)">‹ BACK</button>
+      <button class="btn-next" onclick="goStep(3)">NEXT — CONTACT ›</button>
+    </div>
+
+  </div>
+
+  <!-- ── STEP 3 : Contact ────────────────────────────────────────────── -->
+  <div class="step-pane" id="pane-3">
+
+    <div class="section-title">Contact Details</div>
+    <div class="section-sub">Enter your contact information</div>
+
+    <div class="form-group">
+      <label class="form-label">Mobile Number <span class="badge req">Required</span></label>
+      <input class="form-input" type="tel" id="contact_number" placeholder="+91 9876543210" autocomplete="tel">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(2)">‹ BACK</button>
+      <button class="submit-btn" id="registerBtn" onclick="handleRegister()">⚡ CREATE ACCOUNT</button>
+    </div>
+
+  </div>
+
+  <div class="auth-switch">
+    Already have an account? <a href="/">Sign in →</a>
+  </div>
+
+</div>
+
+<script>
+  // ─── If already logged in, skip to dashboard ───────────────────────────────
+  if (sessionStorage.getItem("bolt_token")) {
+    window.location.href = "/dashboard-page";
+  }
+
+  let currentStep = 1;
+
+  // ─── Step navigation ────────────────────────────────────────────────────────
+  function goStep(n) {
+    if (n > currentStep && !validateStep(currentStep)) return;
+    document.getElementById(`pane-${currentStep}`).classList.remove("active");
+    currentStep = n;
+    document.getElementById(`pane-${currentStep}`).classList.add("active");
+    document.querySelectorAll(".step-item").forEach((el, i) => {
+      const s = i + 1;
+      el.classList.toggle("active", s === currentStep);
+      el.classList.toggle("done",   s <  currentStep);
+    });
+    clearMessages();
+  }
+
+  // ─── Per-step validators ────────────────────────────────────────────────────
+  function validateStep(step) {
+    clearMessages();
+    if (step === 1) return validateAccount();
+    if (step === 2) return validateVehicle();
+    if (step === 3) return validateContact();
+    return true;
+  }
+
+  function validateAccount() {
+    const name = v("full_name");
+    const email = v("email");
+    const pw    = v("password");
+    const cpw   = v("confirmPassword");
+    if (!name || !email || !pw || !cpw) { showError("Please fill in all account fields."); return false; }
+    if (pw.length < 6)                  { showError("Password must be at least 6 characters."); return false; }
+    if (pw !== cpw)                     { showError("Passwords do not match."); return false; }
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRx.test(email))           { showError("Please enter a valid email address."); return false; }
+    return true;
+  }
+
+  function validateVehicle() {
+    const model  = v("vehicle_model");
+    const plate  = v("number_plate");
+    if (!model || !plate) { showError("Please fill in all vehicle details."); return false; }
+    return true;
+  }
+
+  function validateContact() {
+    const mobile = v("contact_number");
+    if (!mobile) { showError("Please enter your mobile number."); return false; }
+    if (!/^\+?[\d\s\-]{7,15}$/.test(mobile)) {
+      showError("Please enter a valid mobile number."); return false;
+    }
+    return true;
+  }
+
+  // ─── Generate Vehicle ID ────────────────────────────────────────────────────
+  function generateVehicleID() {
+    return "EV-" + Math.floor(1000 + Math.random() * 9000);
+  }
+
+  // ─── Main register handler ──────────────────────────────────────────────────
+  async function handleRegister() {
+    if (!validateStep(3)) return;
+
+    const btn = document.getElementById("registerBtn");
+    btn.disabled = true;
+    btn.textContent = "Creating Account...";
+    clearMessages();
+
+    // ── Flat payload — matches backend RegisterRequest exactly ──────────────
+    // Backend fields:  full_name | contact_number | email |
+    //                  vehicle_model | number_plate | vehicle_id | password
+    const payload = {
+      full_name:      v("full_name"),
+      email:          v("email"),
+      password:       v("password"),
+      vehicle_model:  v("vehicle_model"),
+      number_plate:   v("number_plate"),
+      contact_number: v("contact_number"),
+      vehicle_id:     generateVehicleID()     // auto-generated, sent to backend
+    };
+
+    try {
+      const res  = await fetch("/register", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // 409 = duplicate email, 422 = validation error, 503 = DB not connected
+        const msg = data.detail
+          || (Array.isArray(data.detail) ? data.detail[0]?.msg : null)
+          || "Registration failed. Please try again.";
+        showError(msg);
+        return;
+      }
+
+      // ── Store ONLY the JWT token (no user object in storage) ───────────────
+      sessionStorage.setItem("bolt_token", data.token);
+
+      showSuccess("⚡ Account created successfully! Redirecting...");
+      setTimeout(() => { window.location.href = "/dashboard-page"; }, 1500);
+
+    } catch (err) {
+      console.error("Register error:", err);
+      showError("Connection error. Is the server running?");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "⚡ CREATE ACCOUNT";
+    }
+  }
+
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+  function v(id) { return document.getElementById(id).value.trim(); }
+
+  function showError(msg) {
+    const el = document.getElementById("errorMsg");
+    el.textContent = msg;
+    el.classList.add("show");
+    el.classList.remove("show");   // reset animation
+    void el.offsetWidth;           // reflow trick to re-trigger shake
+    el.classList.add("show");
+  }
+
+  function showSuccess(msg) {
+    const el = document.getElementById("successMsg");
+    el.textContent = msg;
+    el.classList.add("show");
+  }
+
+  function clearMessages() {
+    document.getElementById("errorMsg").classList.remove("show");
+    document.getElementById("successMsg").classList.remove("show");
+  }
+
+  // Enter key on last step submits
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && currentStep === 3) handleRegister();
+  });
+</script>
+
+</body>
+</html>
