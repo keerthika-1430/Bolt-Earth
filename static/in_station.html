@@ -262,9 +262,9 @@
 
   <script>
   // ── Auth guard: redirect to login if not authenticated ──
-  const _boltToken = localStorage.getItem("bolt_token");
-  const _boltUser  = JSON.parse(localStorage.getItem("bolt_user") || "{}");
-  if (!_boltToken) { window.location.href = "/"; }
+  const _boltToken = sessionStorage.getItem("bolt_token");
+  const _boltUser  = JSON.parse(sessionStorage.getItem("bolt_user") || "{}");
+  if (!_boltToken) { window.location.href = "/login-page"; }
 
   // ── Slide navigation ──
   let currentSlide = 0;
@@ -376,7 +376,7 @@
         })
       });
 
-      if (res.status === 401) { localStorage.clear(); window.location.href = '/'; return; }
+      if (res.status === 401) { sessionStorage.clear(); window.location.href = '/login-page'; return; }
 
       const data = await res.json();
 

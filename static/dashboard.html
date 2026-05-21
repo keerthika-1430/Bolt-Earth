@@ -173,14 +173,6 @@
     .chip { padding: 3px 10px; border-radius: 20px; font-size: 11px; }
     .chip-avail { background: rgba(0,245,212,0.1); color: var(--neon); }
     .chip-rating { background: rgba(255,209,102,0.1); color: var(--warn); }
-    .book-here-btn {
-      width: 100%; padding: 9px; background: transparent;
-      border: 1px solid rgba(0,245,212,0.3); border-radius: 8px;
-      color: var(--neon); font-family: 'Exo 2', sans-serif; font-size: 12px;
-      font-weight: 600; cursor: pointer; transition: background 0.2s;
-    }
-    .book-here-btn:hover { background: rgba(0,245,212,0.1); }
-
     /* ── Loading spinner ── */
     .spinner {
       display: inline-block; width: 18px; height: 18px;
@@ -225,7 +217,7 @@
       <h1>Hello, <span id="welcomeName">Charging Hero</span> 👋</h1>
       <p>Your smart EV charging dashboard</p>
     </div>
-    <div style="display:flex;gap:10px;position:relative;z-index:1"><button class="station-btn" onclick="window.location.href='/nearby-page'" style="background:linear-gradient(135deg,#00d4ff,#0088ff)">📍 Nearby Stations</button><button class="station-btn" onclick="window.location.href='/station-page'">⚡ Book a Slot</button></div>
+    <div style="display:flex;gap:10px;position:relative;z-index:1"><button class="station-btn" onclick="window.location.href='/nearby-page'" style="background:linear-gradient(135deg,#00d4ff,#0088ff)">📍 Nearby Stations</button></div>
   </div>
 
   <!-- Stats -->
@@ -284,20 +276,38 @@
 
 <script>
   // ── Auth guard ──
-  const token = localStorage.getItem("bolt_token");
-  const user  = JSON.parse(localStorage.getItem("bolt_user") || "{}");
-  if (!token) window.location.href = "/";
+  const token = sessionStorage.getItem("bolt_token");
+  const user  = JSON.parse(sessionStorage.getItem("bolt_user") || "{}");
+  if (!token) window.location.href = "/login-page";
 
-  // Set user name in UI
-  document.getElementById("navUserName").textContent = user.name || "User";
-  document.getElementById("welcomeName").textContent  = user.name || "Charging Hero";
+  // Set user name — use stored value or fetch from /me
+  async function initUserName() {
+    let name = user.full_name || user.name;
+    if (!name && token) {
+      try {
+        const r = await fetch("/me", { headers: { Authorization: "Bearer " + token } });
+        if (r.ok) {
+          const u = await r.json();
+          name = u.full_name || u.name;          // backend returns full_name
+        } else if (r.status === 401) {
+          // Token expired — force re-login
+          sessionStorage.clear();
+          window.location.href = "/login-page";
+          return;
+        }
+      } catch(e) {}
+    }
+    document.getElementById("navUserName").textContent = name || "User";
+    document.getElementById("welcomeName").textContent  = name || "Charging Hero";
+  }
+  initUserName();
 
   const API = (path, opts = {}) =>
     fetch(path, { ...opts, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(opts.headers || {}) } });
 
   function logout() {
-    localStorage.clear();
-    window.location.href = "/";
+    sessionStorage.clear();
+    window.location.href = "/login-page";
   }
 
   function showToast(msg) {
@@ -401,7 +411,6 @@
             <span class="chip" style="background:rgba(123,47,255,0.1);color:#b59dff">🚀 ${s.fast_chargers} Fast</span>
             <span class="chip" style="background:rgba(255,209,102,0.1);color:var(--warn)">🐢 ${s.slow_chargers} Slow</span>
           </div>
-          <button class="book-here-btn" onclick="window.location.href='/station-page'">Book Here →</button>
         </div>
       `).join("");
     } catch (e) {

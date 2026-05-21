@@ -217,6 +217,8 @@ def ping():
 def homepage():       return FileResponse("static/index.html")
 @app.get("/")
 def root():           return FileResponse("static/index.html")
+@app.get("/login-page")
+def login_page():     return FileResponse("static/login.html")
 @app.get("/register-page")
 def register_page():  return FileResponse("static/register.html")
 @app.get("/dashboard-page")

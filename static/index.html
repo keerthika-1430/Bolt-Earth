@@ -59,7 +59,7 @@
     .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
     .nav-bolt { font-size: 22px; color: var(--neon); filter: drop-shadow(0 0 8px var(--neon)); animation: bpulse 2s ease-in-out infinite; }
     @keyframes bpulse { 0%,100%{filter:drop-shadow(0 0 6px var(--neon))}50%{filter:drop-shadow(0 0 20px var(--neon))} }
-    .nav-brand { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 2px; color: var(--text); }
+    .nav-brand { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 2px; color: var(--text); }
     .nav-links { display: flex; align-items: center; gap: 28px; }
     .nav-links a { font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color 0.2s; }
     .nav-links a:hover { color: var(--neon); }
@@ -436,8 +436,8 @@
     <a href="#contact">Contact</a>
   </div>
   <div class="nav-cta">
-    <a class="btn-outline" href="/register-page">Register</a>
-    <a class="btn-primary" href="/dashboard-page">⚡ Open App</a>
+    <a class="btn-outline" href="/login-page">Login</a>
+    <a class="btn-primary" href="/register-page">⚡ Register</a>
   </div>
   <div class="hamburger" id="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
@@ -450,6 +450,7 @@
   <a href="#how-it-works" onclick="toggleMenu()">How It Works</a>
   <a href="#charging" onclick="toggleMenu()">Charging</a>
   <a href="#app" onclick="toggleMenu()">Download App</a>
+  <a href="/login-page" onclick="toggleMenu()" style="font-size:16px;color:var(--muted)">Login</a>
   <a href="/register-page" class="btn-hero" style="margin-top:8px">Create Account</a>
   <a href="/" onclick="toggleMenu()" style="font-size:13px;color:var(--muted);margin-top:8px">← Close</a>
 </div>
@@ -735,7 +736,7 @@
       </div>
       <div class="footer-col">
         <h4>Account</h4>
-        <a href="/">Login</a>
+        <a href="/login-page">Login</a>
         <a href="/register-page">Register</a>
         <a href="/dashboard-page">Dashboard</a>
         <a href="/nearby-page">Find Stations</a>

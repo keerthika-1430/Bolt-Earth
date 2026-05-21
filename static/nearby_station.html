@@ -90,19 +90,6 @@
       color: #b0d0c0; padding: 9px 13px; border-radius: 9px;
       font-size: 12px; outline: none; cursor: pointer; font-family: 'Exo 2', sans-serif;
     }
-    .precise-toggle {
-      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
-      border: 1px solid rgba(0,212,255,.22); border-radius: 9px;
-      background: rgba(0,212,255,.04); cursor: pointer;
-      transition: all .2s; user-select: none; font-size: 12px; color: var(--muted);
-    }
-    .precise-toggle:hover { border-color: rgba(0,212,255,.4); }
-    .precise-toggle.active { border-color: var(--blue); background: rgba(0,212,255,.12); color: var(--blue); box-shadow: 0 0 10px rgba(0,212,255,.12); }
-    .precise-toggle input { display: none; }
-    .toggle-track { width: 32px; height: 17px; border-radius: 999px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); position: relative; transition: background .2s; flex-shrink: 0; }
-    .precise-toggle.active .toggle-track { background: rgba(0,212,255,.4); border-color: var(--blue); }
-    .toggle-knob { width: 11px; height: 11px; border-radius: 50%; background: #7a9a8a; position: absolute; top: 2px; left: 2px; transition: all .2s; }
-    .precise-toggle.active .toggle-knob { left: 17px; background: var(--blue); box-shadow: 0 0 5px rgba(0,212,255,.6); }
     .ns-err { display: none; color: #ff6464; font-size: 13px; padding: 10px 14px; background: rgba(255,80,80,.07); border: 1px solid rgba(255,80,80,.22); border-radius: 9px; margin-top: 12px; }
 
     /* ── INFO BAR ── */
@@ -115,9 +102,6 @@
     .itag { display: flex; align-items: center; gap: 6px; color: #b0ffd0; font-size: 12px; }
     .itag i { color: var(--green); font-size: 10px; }
     .itag strong { color: var(--green); }
-    .acc-badge { display: none; align-items: center; gap: 5px; font-size: 11px; padding: 2px 9px; border-radius: 20px; background: rgba(0,212,255,.08); border: 1px solid rgba(0,212,255,.25); color: var(--blue); }
-    .acc-badge.show { display: inline-flex; }
-
     /* ── MAP ── */
     #ns_map {
       height: 360px; width: 100%; border-radius: 16px;
@@ -337,11 +321,6 @@
           <option value="15">15 km</option>
         </select>
       </div>
-      <label class="precise-toggle" id="preciseToggle" title="High-accuracy GPS (takes a few extra seconds)">
-        <input type="checkbox" id="preciseChk" onchange="togglePrecise(this)"/>
-        <div class="toggle-track"><div class="toggle-knob"></div></div>
-        <span><i class="fa-solid fa-satellite-dish" style="font-size:10px;margin-right:3px"></i> Precise GPS</span>
-      </label>
     </div>
 
     <div class="ns-err" id="ns_err"></div>
@@ -355,10 +334,6 @@
         <span id="ns_bestDist">--</span>&nbsp;·&nbsp;
         <span id="ns_bestSlots">--</span>
       </div>
-      <span class="acc-badge" id="ns_accBadge">
-        <i class="fa-solid fa-satellite-dish"></i>
-        <span id="ns_accVal">±-- m</span>
-      </span>
     </div>
   </div>
 
@@ -474,12 +449,12 @@
 
 <script>
 // ── AUTH GUARD ──
-const _token = localStorage.getItem('bolt_token');
-const _user  = JSON.parse(localStorage.getItem('bolt_user') || '{}');
-if (!_token) window.location.href = '/';
-document.getElementById('navUser').textContent = _user.name || 'User';
+const _token = sessionStorage.getItem('bolt_token');
+const _user  = JSON.parse(sessionStorage.getItem('bolt_user') || '{}');
+if (!_token) window.location.href = '/login-page';
+document.getElementById('navUser').textContent = _user.full_name || _user.name || 'User';
 
-function logout() { localStorage.clear(); window.location.href = '/'; }
+function logout() { sessionStorage.clear(); window.location.href = '/login-page'; }
 
 const API = (path, opts={}) =>
   fetch(path, { ...opts, headers: { Authorization: `Bearer ${_token}`, 'Content-Type': 'application/json', ...(opts.headers||{}) } });
@@ -500,47 +475,12 @@ const mkStationIcon = (isBest) => L.divIcon({
   className:''
 });
 
-// ── PRECISE GPS TOGGLE ──
-function togglePrecise(chk) {
-  document.getElementById('preciseToggle').classList.toggle('active', chk.checked);
-}
 
 // ── STEP 1: DETECT GPS ──
 function ns_detect() {
   if (!navigator.geolocation) { ns_showErr('Geolocation not supported.'); return; }
   ns_setLoading(true); ns_hideErr();
-  const precise = document.getElementById('preciseChk').checked;
-
-  if (precise) {
-    let watchId=null, settled=false;
-    document.getElementById('ns_btn').innerHTML = '<i class="fa-solid fa-satellite-dish fa-spin"></i> Acquiring precise fix…';
-    const deadline = setTimeout(() => {
-      if (!settled && watchId!==null) {
-        navigator.geolocation.clearWatch(watchId);
-        ns_showErr('Precise fix timed out — using best available location.');
-        ns_setLoading(false);
-        document.getElementById('ns_btn').innerHTML = '<i class="fa-solid fa-crosshairs"></i> Detect My Location';
-      }
-    }, 15000);
-
-    watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        if (settled) return;
-        const acc = pos.coords.accuracy;
-        if (acc > 20) { document.getElementById('ns_btn').innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin"></i> GPS fixing… ±${Math.round(acc)}m`; return; }
-        settled=true; clearTimeout(deadline); navigator.geolocation.clearWatch(watchId);
-        document.getElementById('ns_btn').innerHTML = '<i class="fa-solid fa-crosshairs"></i> Detect My Location';
-        document.getElementById('ns_accVal').textContent = `±${Math.round(acc)} m`;
-        document.getElementById('ns_accBadge').classList.add('show');
-        ns_onGPS(pos);
-      },
-      (err) => { if(settled) return; settled=true; clearTimeout(deadline); document.getElementById('ns_btn').innerHTML='<i class="fa-solid fa-crosshairs"></i> Detect My Location'; ns_onGPSErr(err); },
-      { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
-    );
-  } else {
-    document.getElementById('ns_accBadge')?.classList.remove('show');
-    navigator.geolocation.getCurrentPosition(ns_onGPS, ns_onGPSErr, { enableHighAccuracy:true, timeout:10000 });
-  }
+  navigator.geolocation.getCurrentPosition(ns_onGPS, ns_onGPSErr, { enableHighAccuracy:true, timeout:10000 });
 }
 
 // ── STEP 2: GPS SUCCESS → call API ──
@@ -775,7 +715,7 @@ async function confirmBooking() {
       })
     });
 
-    if (res.status === 401) { localStorage.clear(); window.location.href='/'; return; }
+    if (res.status === 401) { sessionStorage.clear(); window.location.href='/login-page'; return; }
     const data = await res.json();
 
     if (res.ok) {

@@ -296,6 +296,7 @@
         // ── Store ONLY the JWT token ──────────────────────────────────────────
         // No user object in storage — fetch /me with the token when needed
         sessionStorage.setItem("bolt_token", data.token);
+        sessionStorage.setItem("bolt_user", JSON.stringify(data.user));
 
         // Clear any stale localStorage entries from old code
         localStorage.removeItem("bolt_user");
